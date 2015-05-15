@@ -1,0 +1,14 @@
+web:
+  build: .
+  environment:
+    - REDIS_SERVER=redis
+    - CANOE_REDIRECTION_HOST=canoe.lvh.me
+    - CANOE_API_HOST=canoeapi.lvh.me
+    - PORT=5050
+  links:
+    - redis
+  ports:
+    - "5050:5050"
+  command: canoe
+redis:
+  image: redis
