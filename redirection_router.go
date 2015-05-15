@@ -11,6 +11,8 @@ func RedirectionHandler(w http.ResponseWriter, req *http.Request) {
 	slug := mux.Vars(req)["slug"]
 	url := getURLFromSlug(slug)
 
+	fmt.Println("[redirect] - ", slug, " => ", url)
+
 	if len(url) < 1 {
 		http.NotFound(w, req)
 		return

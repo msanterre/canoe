@@ -4,25 +4,59 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/fzzy/radix/redis"
+	"github.com/asaskevich/govalidator"
 )
 
 type SubmitResponse struct {
 	Url string `json:"url"`
 }
 
+func AuthenticateRequest(rw http.ResponseWriter, req *http.Request, next http.HandlerFunc) {
+
+	if requireAuth() {
+		authKey := getAuthKey()
+		reqAuthKey, _, _ := req.BasicAuth()
+		fmt.Println("[auth] (", authKey, "-", reqAuthKey, ")")
+
+		if authKey != reqAuthKey {
+			fmt.Println("Not authenticated")
+			http.Error(rw, "Authkey invalid", 401)
+			return
+		}
+	}
+	next(rw, req)
+}
+
+func getAuthKey() string {
+  return os.Getenv("AUTH_KEY")
+}
+
+func requireAuth() bool {
+	if authkey := os.Getenv("AUTH_KEY"); len(authkey) > 1 {
+		return true
+	}
+	return false
+}
+
 func SubmitHandler(w http.ResponseWriter, req *http.Request) {
 	url := req.FormValue("url")
-	redis := RedisClient()
-	slug := generateSlug(redis)
+	fmt.Println("[submit] - ", url)
 
-	redis.Cmd("HSET", UrlStore, slug, url)
+	if submitUrlValidation(w, url) {
+		redis := RedisClient()
+		slug := generateSlug(redis)
+		defer redis.Close()
 
-	redirectUrl := fullRedirectionUrl(slug)
-	response := &SubmitResponse{Url: redirectUrl}
-	submitJsonResponse(w, response)
+		redis.Cmd("HSET", UrlStore, slug, url)
+
+		redirectUrl := fullRedirectionUrl(slug)
+		response := &SubmitResponse{Url: redirectUrl}
+		submitJsonResponse(w, response)
+	}
 }
 
 func ApiRouter() *mux.Router {
@@ -70,8 +104,16 @@ func submitJsonResponse(w http.ResponseWriter, resp *SubmitResponse) {
 
 	jsonResponse, jsonErr := ToJson(resp)
 	if jsonErr != nil {
-		http.Error(w, "{\"error\": \"Uknown Error\"}", 500)
+		http.Error(w, "{\"error\": \"Unknown Error\"}", 500)
 		return
 	}
 	w.Write([]byte(jsonResponse))
+}
+
+func submitUrlValidation(w http.ResponseWriter, url string) bool {
+	if govalidator.IsURL(url) {
+		return true
+	}
+	http.Error(w, "{\"error\": \"This URL is invalid\"}", 422)
+	return false
 }

@@ -29,7 +29,7 @@ fresh
 
 ### TODO
 - [x] Provide dockerfile && docker-compose.yml
-- [ ] Validation
+- [x] Validation
 - [ ] Pretty up README
 - [x] Ensure slugs don't collide
 - [ ] Stats

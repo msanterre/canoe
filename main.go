@@ -27,6 +27,7 @@ func main() {
 	))
 
 	router.Host(apiHost()).Handler(negroni.New(
+		negroni.HandlerFunc(AuthenticateRequest),
 		negroni.Wrap(apiRouter),
 	))
 
