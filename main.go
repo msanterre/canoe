@@ -3,6 +3,8 @@ package main
 
 import (
 	"os"
+	"encoding/json"
+	"fmt"
 
 	"github.com/gorilla/mux"
 	"github.com/codegangsta/negroni"
@@ -51,4 +53,13 @@ func redirectionHost() string {
 		return envHost
 	}
 	return DefaultRedirectionHost
+}
+
+func ToJson(obj interface{}) (string, error) {
+	bytes, err := json.Marshal(obj)
+	if err != nil {
+		fmt.Println("[ERR] ToJson - ", err)
+		return "{}", err
+	}
+	return string(bytes), nil
 }
