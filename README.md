@@ -1,7 +1,7 @@
 # canoe
 Very simple URL shortener
 
-Incredibly fast and simple URL shortener that runs on almost nothing. 
+Incredibly fast and simple URL shortener that runs on almost nothing.
 
 It used Redis as a backend, so this will scale up to a considerable amount of URLs.
 
@@ -31,14 +31,14 @@ fresh
 - [ ] Provide dockerfile && docker-compose.yml
 - [ ] Validation
 - [ ] Pretty up README
-- [ ] Ensure slugs don't collide
+- [x] Ensure slugs don't collide
 - [ ] Stats
 - [ ] JSON support
- 
+
 ### Contributions
- 
+
 Contributions are welcome. Fork this repo and submit a pull request and I will review it.
- 
+
 ### License
 Copyright (c) 2015 Maxime Santerre
 
