@@ -28,12 +28,12 @@ fresh
 
 
 ### TODO
-- [ ] Provide dockerfile && docker-compose.yml
+- [x] Provide dockerfile && docker-compose.yml
 - [ ] Validation
 - [ ] Pretty up README
 - [x] Ensure slugs don't collide
 - [ ] Stats
-- [ ] JSON support
+- [x] JSON support
 
 ### Contributions
 
