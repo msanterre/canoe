@@ -19,7 +19,8 @@ func AuthenticateRequest(rw http.ResponseWriter, req *http.Request, next http.Ha
 
 	if requireAuth() {
 		authKey := getAuthKey()
-		reqAuthKey, _, _ := req.BasicAuth()
+		reqAuthKey := requestAuthKey(req)
+
 		fmt.Println("[auth] (", authKey, "-", reqAuthKey, ")")
 
 		if authKey != reqAuthKey {
@@ -29,6 +30,14 @@ func AuthenticateRequest(rw http.ResponseWriter, req *http.Request, next http.Ha
 		}
 	}
 	next(rw, req)
+}
+
+func requestAuthKey(req *http.Request) string {
+	authKey, _, ok := req.BasicAuth()
+	if ok {
+		return authKey
+	}
+	return req.FormValue("apikey")
 }
 
 func getAuthKey() string {
