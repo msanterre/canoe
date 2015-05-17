@@ -1,6 +1,6 @@
 FROM golang
 MAINTAINER Maxime Santerre
-env PORT 5050
+ENV PORT 5050
 
 RUN go get github.com/tools/godep
 
