@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"errors"
 
 	"github.com/gorilla/mux"
 	"github.com/fzzy/radix/redis"
@@ -57,14 +58,17 @@ func SubmitHandler(w http.ResponseWriter, req *http.Request) {
 
 	if submitUrlValidation(w, url) {
 		redis := RedisClient()
-		slug := generateSlug(redis)
 		defer redis.Close()
 
-		redis.Cmd("HSET", UrlStore, slug, url)
+		slug, err := getSlug(redis, w, req)
 
-		redirectUrl := fullRedirectionUrl(slug)
-		response := &SubmitResponse{Url: redirectUrl}
-		submitJsonResponse(w, response)
+		if err == nil {
+			fmt.Println("Giving slug: ", slug)
+			redis.Cmd("HSET", UrlStore, slug, url)
+			redirectUrl := fullRedirectionUrl(slug)
+			response := &SubmitResponse{Url: redirectUrl}
+			submitJsonResponse(w, response)
+		}
 	}
 }
 
@@ -98,6 +102,17 @@ func slugExists(redis *redis.Client, slug string) bool {
 		return false
 	}
 	return exists
+}
+
+func getSlug(redis *redis.Client, w http.ResponseWriter, r *http.Request) (string, error) {
+	if slugParam := r.FormValue("slug"); len(slugParam) > 1 {
+		if slugExists(redis, slugParam) {
+			http.Error(w, "{\"error\": \"This slug is already taken.\"}", 422)
+			return slugParam, errors.New("Slug taken")
+		}
+		return slugParam, nil
+	}
+	return generateSlug(redis), nil
 }
 
 func generateSlug(redis *redis.Client) string {
