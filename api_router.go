@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"errors"
 
@@ -53,10 +54,11 @@ func requireAuth() bool {
 }
 
 func SubmitHandler(w http.ResponseWriter, req *http.Request) {
-	url := req.FormValue("url")
-	fmt.Println("[submit] - ", url)
+	submitUrl, _ := url.QueryUnescape(req.FormValue("url"))
 
-	if submitUrlValidation(w, url) {
+	fmt.Println("[submit] - ", submitUrl)
+
+	if submitUrlValidation(w, submitUrl) {
 		redis := RedisClient()
 		defer redis.Close()
 
@@ -64,7 +66,7 @@ func SubmitHandler(w http.ResponseWriter, req *http.Request) {
 
 		if err == nil {
 			fmt.Println("Giving slug: ", slug)
-			redis.Cmd("HSET", UrlStore, slug, url)
+			redis.Cmd("HSET", UrlStore, slug, submitUrl)
 			redirectUrl := fullRedirectionUrl(slug)
 			response := &SubmitResponse{Url: redirectUrl}
 			submitJsonResponse(w, response)
@@ -134,8 +136,8 @@ func submitJsonResponse(w http.ResponseWriter, resp *SubmitResponse) {
 	w.Write([]byte(jsonResponse))
 }
 
-func submitUrlValidation(w http.ResponseWriter, url string) bool {
-	if govalidator.IsURL(url) {
+func submitUrlValidation(w http.ResponseWriter, submitUrl string) bool {
+	if govalidator.IsURL(submitUrl) {
 		return true
 	}
 	http.Error(w, "{\"error\": \"This URL is invalid\"}", 422)
