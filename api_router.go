@@ -7,10 +7,10 @@ import (
 	"net/url"
 	"os"
 	"errors"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/fzzy/radix/redis"
-	"github.com/asaskevich/govalidator"
 )
 
 type SubmitResponse struct {
@@ -62,6 +62,7 @@ func SubmitHandler(w http.ResponseWriter, req *http.Request) {
 		redis := RedisClient()
 		defer redis.Close()
 
+		ensureHTTP(&submitUrl)
 		slug, err := getSlug(redis, w, req)
 
 		if err == nil {
@@ -125,6 +126,14 @@ func generateSlug(redis *redis.Client) string {
 	return slug
 }
 
+func ensureHTTP(str *string) {
+	if strings.Contains(*str, "http") {
+		return
+	}
+
+	*str = "http://" + *str
+}
+
 func submitJsonResponse(w http.ResponseWriter, resp *SubmitResponse) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -137,7 +146,7 @@ func submitJsonResponse(w http.ResponseWriter, resp *SubmitResponse) {
 }
 
 func submitUrlValidation(w http.ResponseWriter, submitUrl string) bool {
-	if govalidator.IsURL(submitUrl) {
+	if strings.Contains(submitUrl, ".") {
 		return true
 	}
 	http.Error(w, "{\"error\": \"This URL is invalid\"}", 422)
