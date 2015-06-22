@@ -1,36 +1,45 @@
-
 package main
 
 import (
-	"os"
 	"encoding/json"
 	"fmt"
+	"os"
+	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/codegangsta/negroni"
+	"github.com/gorilla/mux"
+	"github.com/thoas/stats"
 )
 
 const DefaultRedirectionHost = "canoe.lvh.me"
 const DefaultAPIHost = "canoeapi.lvh.me"
 const DefaultPort = "5050"
 
+func HomeHandler(w http.ResponseWriter, req *http.Request) {
+	fmt.Fprintf(w, "Canoe URL shorterning service")
+}
+
 func main() {
-	// TODO: Ensure redis is running & show stats
+	statsMiddleware := stats.New()
+
 	router := mux.NewRouter()
 	redirectionRouter := RedirectionRouter()
-	apiRouter := ApiRouter()
+	apiRouter := ApiRouter(statsMiddleware)
 
 	n := negroni.Classic()
 
 	router.Host(redirectionHost()).Handler(negroni.New(
+		statsMiddleware,
 		negroni.Wrap(redirectionRouter),
 	))
 
 	router.Host(apiHost()).Handler(negroni.New(
 		negroni.HandlerFunc(AuthenticateRequest),
+		statsMiddleware,
 		negroni.Wrap(apiRouter),
 	))
 
+	router.HandleFunc("/", HomeHandler)
 	n.UseHandler(router)
 	n.Run("0.0.0.0:" + runPort())
 }

@@ -8,9 +8,11 @@ import (
 	"os"
 	"errors"
 	"strings"
+	"encoding/json"
 
 	"github.com/gorilla/mux"
 	"github.com/fzzy/radix/redis"
+	"github.com/thoas/stats"
 )
 
 type SubmitResponse struct {
@@ -75,9 +77,16 @@ func SubmitHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func ApiRouter() *mux.Router {
+func ApiRouter(statsMiddleware *stats.Stats) *mux.Router {
 	router := mux.NewRouter()
 	router.HandleFunc("/submit", SubmitHandler)
+	router.HandleFunc("/stats", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		stats := statsMiddleware.Data()
+		b, _ := json.Marshal(stats)
+		w.Write(b)
+	})
+
 	return router
 }
 
