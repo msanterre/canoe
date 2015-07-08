@@ -30,6 +30,8 @@ func RedirectionRouter() *mux.Router {
 
 func getURLFromSlug(slug string) string {
   redis := RedisClient()
+	defer redis.Close()
+
 	url, err := redis.Cmd("HGET", UrlStore, slug).Str()
 	if err != nil {
 		fmt.Println(err)
