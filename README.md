@@ -1,11 +1,9 @@
 # canoe
-Very simple URL shortener
+Canoe is a simple and fast URL shortener.
 
-Incredibly fast and simple URL shortener that runs on almost nothing.
+It uses Redis as a backend store, which allows canoe to scale to a considerable amount of URLs.
 
-It used Redis as a backend, so this will scale up to a considerable amount of URLs.
-
-To set it up locally, you just need to follow this [guide](https://github.com/msanterre/canoe/wiki/Local-setup)
+You just need to follow this [guide](https://github.com/msanterre/canoe/wiki/Local-setup) to set it up locally.
 
 ### Installation
 ```
@@ -14,13 +12,13 @@ git clone https://github.com/msanterre/canoe.git
 
 ### Usage
 
-The best way to run this locally is to use fresh
+Use `fresh` to run Canoe locally: 
 
 ```
 go get github.com/pilu/fresh
 ```
 
-Then go to the project root and run
+Then switch to the project root and run:
 
 ```
 fresh
